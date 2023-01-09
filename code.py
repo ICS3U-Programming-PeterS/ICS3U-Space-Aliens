@@ -5,18 +5,20 @@
 # This program is the "Space Aliens" program on the PyBadge
 
 import ugame
-import stage 
+import stage
 
 
 def game_scene():
     # this function is the main game screen
 
-    print("\n\n\n") # 3 blank lines
-    print("Hello, World(Peter)!") # what is going to be displayed
+    print("\n\n\n")  # 3 blank lines
+    print("Hello, World(Peter)!")  # what is going to be displayed
+    print("Extra functionality")
 
     # repeat forever, game loop
     while True:
-        pass # just a placeholder for now
+        pass  # just a placeholder for now
+
 
 if __name__ == "__main__":
     game_scene()
