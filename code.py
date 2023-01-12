@@ -11,6 +11,9 @@ import ugame
 
 
 def game_scene():
+    # get user input
+    keys = ugame.buttons.get_pressed()
+
     # This function sets up and runs the main game scene.
 
     # Load the background and sprite image banks
@@ -23,10 +26,7 @@ def game_scene():
     # Create the ship sprite using image at index 5, with initial position
     # (72,57)
     ship = stage.Sprite(image_bank_sprites, 5, 72, 57)
-
-    # Create the ship sprite using image at index 5, with initial position
-    # (72,57)
-    table = stage.Sprite(image_bank_sprites, 1, 0, 50)
+    table = stage.Sprite(image_bank_sprites, 0, 0, 50)
 
     # Create a "Stage" object to manage the game graphics and input
     # Set the frame rate to 60fps
@@ -40,7 +40,36 @@ def game_scene():
 
     # Game Loop
     while True:
-        pass
+        # get user input
+        keys = ugame.buttons.get_pressed()
+
+        # code to move ship sprite and to rap it
+        if keys & ugame.K_X:
+            pass
+        if keys & ugame.K_O:
+            pass
+        if keys & ugame.K_START:
+            pass
+        if keys & ugame.K_SELECT:
+            pass
+        if keys & ugame.K_RIGHT:
+            ship.move(ship.x + 1, ship.y)
+            if ship.x > 160:
+                ship.move(0, ship.y)
+        if keys & ugame.K_LEFT:
+            ship.move(ship.x - 1, ship.y)
+            if ship.x < 0:
+                ship.move(155, ship.y)
+        if keys & ugame.K_UP:
+            ship.move(ship.x, ship.y - 1)
+            if ship.y < 0:
+                ship.move(ship.x, 128)
+        if keys & ugame.K_DOWN:
+            ship.move(ship.x, ship.y + 1)
+            if ship.y > 128:
+                ship.move(ship.x, 0)
+
+        # input to make the sprite move
         # Redraw the sprites on the screen
         game.render_sprites([ship, table])
         # Pause the loop to achieve 60fps frame rate
