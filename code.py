@@ -8,12 +8,10 @@
 
 import stage
 import ugame
+import constants
 
 
 def game_scene():
-    # get user input
-    keys = ugame.buttons.get_pressed()
-
     # This function sets up and runs the main game scene.
 
     # Load the background and sprite image banks
@@ -21,19 +19,24 @@ def game_scene():
     image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
 
     # Create the background grid using the image and set the size to 10x8 tiles
-    background = stage.Grid(image_bank_background, 10, 8)
+    background = stage.Grid(
+        image_bank_background, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
+    )
 
     # Create the ship sprite using image at index 5, with initial position
-    # (72,57)
-    ship = stage.Sprite(image_bank_sprites, 5, 72, 57)
-    table = stage.Sprite(image_bank_sprites, 0, 0, 50)
+    # (56,57)
+    ship = stage.Sprite(image_bank_sprites, 5, 72, 56)
+    table = stage.Sprite(image_bank_sprites, 0, 0, 56)
+    table2 = stage.Sprite(
+        image_bank_sprites, 0, constants.SCREEN_X - constants.SPRITE_SIZE, 56
+    )
 
     # Create a "Stage" object to manage the game graphics and input
     # Set the frame rate to 60fps
-    game = stage.Stage(ugame.display, 60)
+    game = stage.Stage(ugame.display, constants.FPS)
 
     # Add the background and ship to the layers list
-    game.layers = [ship, table] + [background]
+    game.layers = [ship, table, table2] + [background]
 
     # Draw the background on the screen
     game.render_block()
@@ -52,26 +55,34 @@ def game_scene():
             pass
         if keys & ugame.K_SELECT:
             pass
+
         if keys & ugame.K_RIGHT:
-            ship.move(ship.x + 1, ship.y)
-            if ship.x > 160:
-                ship.move(0, ship.y)
+            if ship.x < constants.SCREEN_X - constants.SPRITE_SIZE:
+                ship.move(ship.x + 1, ship.y)
+            else:
+                ship.move(constants.SCREEN_X - constants.SPRITE_SIZE, ship.y)
+
         if keys & ugame.K_LEFT:
-            ship.move(ship.x - 1, ship.y)
-            if ship.x < 0:
-                ship.move(160, ship.y)
+            if ship.x >= 0:
+                ship.move(ship.x - 1, ship.y)
+            else:
+                ship.move(0, ship.y)
+
         if keys & ugame.K_UP:
-            ship.move(ship.x, ship.y - 1)
-            if ship.y < 0:
-                ship.move(ship.x, 128)
+            if ship.y >= 0:
+                ship.move(ship.x, ship.y - 1)
+            else:
+                ship.move(ship.x, 120)
+
         if keys & ugame.K_DOWN:
-            ship.move(ship.x, ship.y + 1)
-            if ship.y > 128:
+            if ship.y <= 120:
+                ship.move(ship.x, ship.y + 1)
+            else:
                 ship.move(ship.x, 0)
 
         # input to make the sprite move
         # Redraw the sprites on the screen
-        game.render_sprites([ship, table])
+        game.render_sprites([ship, table, table2])
         # Pause the loop to achieve 60fps frame rate
         game.tick()
 
