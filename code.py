@@ -50,7 +50,7 @@ def game_scene():
     )
     table = stage.Sprite(image_bank_sprites, 0, 0, 56)
     table2 = stage.Sprite(
-        image_bank_sprites, 0, int(constants.SCREEN_X - constants.SPRITE_SIZE), 56
+        image_bank_sprites, 0, constants.SCREEN_X - constants.SPRITE_SIZE, 56
     )
 
     # Create a "Stage" object to manage the game graphics and input
