@@ -2,6 +2,7 @@
 
 # Created by: Peter Sobowale
 # Created on: Jan 2023
+# file is for ping ping escape game
 
 # storage of all important numbers
 SCREEN_X = 160
@@ -13,7 +14,7 @@ TOTAL_NUMBER_OF_ALIENS = 5
 FPS = 60
 SPRITE_MOVEMENT_SPEED = 1
 
-# button input
+# button state
 button_state = {
     "button_up": "up",
     "button_just_pressed": "just pressed",
