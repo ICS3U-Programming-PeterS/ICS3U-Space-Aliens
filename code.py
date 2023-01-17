@@ -196,12 +196,20 @@ def game_scene():
         image_bank_sprites, 0, constants.SCREEN_X - constants.SPRITE_SIZE, 56
     )
 
+    # create list of lasers for when we shoot
+    lasers = []
+    for laser_number in range(constants.TOTAL_NUMBER_OF_LASERS):
+        a_single_laser = stage.Sprite(
+            image_bank_sprites, 10, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+        )
+        lasers.append(a_single_laser)
+
     # Create a "Stage" object to manage the game graphics and input
     # Set the frame rate to 60fps
     game = stage.Stage(ugame.display, constants.FPS)
 
     # Add the background and ball to the layers list
-    game.layers = [ball] + [table, table2, alien] + [background]
+    game.layers = lasers + [ball] + [table, table2, alien] + [background]
 
     # Draw the background on the screen
     game.render_block()
@@ -274,12 +282,29 @@ def game_scene():
         # update game logic
         # play sound if A was just button_just_pressed
         if a_button == constants.button_state["button_just_pressed"]:
-            sound.play(pew_sound)
+            # fire a laser, if we have enough power (have not used up all the lasers)
+            for laser_number in range(len(lasers)):
+                if lasers[laser_number].x < 0:
+                    lasers[laser_number].move(ball.x, ball.y)
+                    sound.play(pew_sound)
+                    break
         if b_button == constants.button_state["button_just_pressed"]:
             sound.play(pingpong_sound)
 
+        # each frame move the lasers, that have been fired up
+        for laser_number in range(len(lasers)):
+            if lasers[laser_number].x > 0:
+                lasers[laser_number].move(
+                    lasers[laser_number].x,
+                    lasers[laser_number].y - constants.LASER_SPEED,
+                )
+                if lasers[laser_number].y < constants.OFF_TOP_SCREEN:
+                    lasers[laser_number].move(
+                        constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                    )
+
         # Redraw the Sprites
-        game.render_sprites([ball] + [table, table2, alien])
+        game.render_sprites(lasers + [ball] + [table, table2, alien])
 
         # Pause the loop to achieve 60fps frame rate
         game.tick()
