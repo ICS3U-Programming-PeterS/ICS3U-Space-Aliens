@@ -504,6 +504,7 @@ def game_scene(mute):
                     score_text.move(1, 1)
                     score_text.text("Score: {0}".format(score))
 
+        # check if the aliens and lasers are touching
         for laser_number in range(len(lasers)):
             if lasers[laser_number].x > 0:
                 for alien_number in range(len(aliens)):
@@ -529,28 +530,31 @@ def game_scene(mute):
 
                             # Stop any currently playing sound
                             sound.stop()
+
                             # Play the sound of the alien being hit
                             if mute == "off":
                                 sound.play(boom_sound)
                             else:
                                 pass
+
                             # Show two new aliens on the screen
                             show_alien()
                             show_alien()
+
                             # Increase the score by 1
                             score += 1
+
+                            # Display the score
                             score_text.clear()
                             score_text.cursor(0, 0)
                             score_text.move(1, 1)
                             score_text.text("Score: {0}".format(score))
 
+            # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
             for alien_number in range(len(aliens)):
-                # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
+                # Check for collision between the current alien and the ship using the `stage.collide` function
+                # This function takes the x and y coordinates of the bounding box of each object
                 if aliens[alien_number].x > 0:
-                    # Check for collision between the current alien and the ship using the `stage.collide` function
-                    # This function takes the x and y coordinates of the bounding box of each object
-                    # In this case, the bounding box of the alien is defined as x+1, y, x+15, y+15
-                    # and the bounding box of the ship is defined as ship.x, ship.y, ship.x + 15, ship.y + 15
                     if stage.collide(
                         aliens[alien_number].x + 2,
                         aliens[alien_number].y + 2,
@@ -563,13 +567,16 @@ def game_scene(mute):
                     ):
                         # If collision is detected, stop any currently playing sound
                         sound.stop()
+
                         # Play the crash sound
                         if mute == "off":
                             sound.play(crash_sound)
                         else:
                             pass
+
                         # Wait for 3 seconds before moving on to the game over scene
                         time.sleep(3.0)
+
                         # Call the game over scene and pass in the current score
 
                         # my personal high score
@@ -605,10 +612,12 @@ def game_loss_scene(final_score, high_score):
     text5 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
-    # Move the text to the position (20, 20)
+    # Move the text to the position (20, 35)
     text5.move(20, 35)
+
     # Set the text to the final score
     text5.text("High Score: {:0>2d}".format(high_score))
+
     # Add the text object to the text list
     text.append(text5)
 
@@ -616,31 +625,41 @@ def game_loss_scene(final_score, high_score):
     text1 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (20, 20)
     text1.move(20, 20)
+
     # Set the text to the final score
     text1.text("Final Score: {:0>2d}".format(final_score))
+
     # Add the text object to the text list
     text.append(text1)
 
-    # Create a Text object with a width of 29, height of 14, no font, and the blue palette
+    # Create a Text object with a width of 29, height of 14, no font, and the red palette
     text2 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (43, 60)
     text2.move(43, 60)
+
     # Set the text to "GAME OVER"
     text2.text("GAME OVER")
+
     # Add the text object to the text list
     text.append(text2)
 
+    # Create a Text object with a width of 29, height of 14, no font, and the red palette
     text4 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
-    # Move the text to the position (43, 60)
+
+    # Move the text to the position (48, 70)
     text4.move(48, 70)
-    # Set the text to "GAME OVER"
+
+    # Set the text to "YOU LOSE"
     text4.text("YOU LOSE")
+
     # Add the text object to the text list
     text.append(text4)
 
@@ -648,10 +667,13 @@ def game_loss_scene(final_score, high_score):
     text3 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (32, 110)
     text3.move(32, 110)
+
     # Set the text to "PRESS SELECT"
     text3.text("PRESS SELECT")
+
     # Add the text object to the text list
     text.append(text3)
 
@@ -667,6 +689,8 @@ def game_loss_scene(final_score, high_score):
     while True:
         # Check if the SELECT button is pressed
         keys = ugame.buttons.get_pressed()
+
+        # check if the select button is pressed
         if keys & ugame.K_SELECT != 0:
             has_reloaded = True
             # Reload the game if SELECT is pressed
@@ -677,10 +701,8 @@ def game_loss_scene(final_score, high_score):
 
 def game_win_scene(current_score, high_score):
     # This function displays the game over scene with the final score and
-
     # allows the user to restart the game by pressing the SELECT button.
-
-    # Load the image "mt_game_studio.bmp"
+    # Load the image "pingpong_background.bmp"
     image_bank_2 = stage.Bank.from_bmp16("pingpong_background.bmp")
 
     # Create a background object using the image and dimensions from constants
@@ -695,10 +717,13 @@ def game_win_scene(current_score, high_score):
     text1 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (20, 20)
     text1.move(20, 20)
+
     # Set the text to the final score
     text1.text("Final Score: {:0>2d}".format(current_score))
+
     # Add the text object to the text list
     text.append(text1)
 
@@ -706,20 +731,27 @@ def game_win_scene(current_score, high_score):
     text2 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (43, 60)
     text2.move(43, 60)
+
     # Set the text to "GAME OVER"
     text2.text("GAME OVER")
+
     # Add the text object to the text list
     text.append(text2)
 
+    # Create a Text object with a width of 29, height of 14, no font, and the blue palette
     text4 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
-    # Move the text to the position (43, 60)
+
+    # Move the text to the position (48, 70)
     text4.move(48, 70)
-    # Set the text to "GAME OVER"
+
+    # Set the text to "YOU WIN"
     text4.text("YOU WIN")
+
     # Add the text object to the text list
     text.append(text4)
 
@@ -727,10 +759,13 @@ def game_win_scene(current_score, high_score):
     text3 = stage.Text(
         width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
     )
+
     # Move the text to the position (32, 110)
     text3.move(32, 110)
+
     # Set the text to "PRESS SELECT"
     text3.text("PRESS SELECT")
+
     # Add the text object to the text list
     text.append(text3)
 
@@ -743,9 +778,12 @@ def game_win_scene(current_score, high_score):
     # Draw the background and text on the screen
     game.render_block()
 
+    # forever loop
     while True:
-        # Check if the SELECT button is pressed
+        # user input
         keys = ugame.buttons.get_pressed()
+
+        # check if select button has been pre
         if keys & ugame.K_SELECT != 0:
             has_reloaded = True
             # Reload the game if SELECT is pressed
