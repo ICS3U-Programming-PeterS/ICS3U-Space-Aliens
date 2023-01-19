@@ -4,13 +4,16 @@
 # Created by: Peter Sobowale
 # Created on: Jan 2023
 # This program is the "Space Aliens" game for the PyBadge.
+
+
 import ugame
-import stage
+
 import random
 import time
-import supervisor
+
 import constants
-import os
+import stage
+import supervisor
 
 
 # global variable off
