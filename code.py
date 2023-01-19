@@ -10,9 +10,14 @@ import random
 import time
 import supervisor
 import constants
+import os
 
 
-def splash_scene():
+# global variable off
+mute = "off"
+
+
+def splash_scene(mute):
     # This function sets up and runs the splash scene.
 
     # get coin sound ready
@@ -32,9 +37,7 @@ def splash_scene():
         image_bank_background, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
     )
 
-    # used this program to split the image into tile:
-    #   https://ezgif.com/sprite-cutter/ezgif-5-818cdbcc3f66.png
-
+    # tile the background to make a splash screen
     background.tile(2, 2, 0)  # blank white
     background.tile(3, 2, 1)
     background.tile(4, 2, 2)
@@ -77,8 +80,58 @@ def splash_scene():
     while True:
         # wait for 2 seconds
         time.sleep(2)
+
         # go to the menu scene
         menu_scene()
+
+
+def instructions_scene():
+    # This function displays the instructions scene
+    # It also allows the user to go back to the menu scene
+    # Load the image "pingpong_background.bmp"
+    image_bank_2 = stage.Bank.from_bmp16("pingpong_background.bmp")
+
+    # Create a background object using the image and dimensions from constants
+    background = stage.Grid(
+        image_bank_2, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
+    )
+
+    # set the background tile to choose random background from 1 - 3
+    # using nested for each loops
+    for x_location in range(constants.SCREEN_GRID_X):
+        for y_location in range(constants.SCREEN_GRID_Y):
+            background.tile(x_location, y_location, 1)
+
+    # Display the instructions
+    print("INSTRUCTIONS")
+    print("\nWin if you get high \nscore, lose if you don't\n")
+    print("Press A to return \nto menu.")
+
+    # Create a "Stage" object to manage the game graphics and input
+    game = stage.Stage(ugame.display, constants.FPS)
+
+    # Add the background and text objects to the layers list
+    game.layers = [background]
+
+    # Draw the background and text on the screen
+    game.render_block()
+
+    while True:
+        # Check for user input
+        keys = ugame.buttons.get_pressed()
+
+        # check if they pressed the start button
+        if keys & ugame.K_START != 0:
+            # go to game scene
+            game_scene(mute)
+
+        # check if they pressed the A button
+        if keys & ugame.K_O != 0:
+            # go to menu scene
+            menu_scene()
+
+        # Pause the loop to achieve 60fps frame rate
+        game.tick()
 
 
 def menu_scene():
@@ -87,7 +140,7 @@ def menu_scene():
     # Load the background and sprite image banks
     image_bank_background = stage.Bank.from_bmp16("space_aliens.bmp")
 
-    # Add text objects
+    # Add text objects (into a list)
     text = []
 
     # Create a Text object with a width of 29, height of 12, no font, and the red palette
@@ -99,7 +152,7 @@ def menu_scene():
         buffer=None,
     )
 
-    # Move the text to the position (17, 10)
+    # Move the text to the position (17, 20)
     text1.move(17, 20)
 
     # Set the text to "Ping Pong Escape"
@@ -112,12 +165,29 @@ def menu_scene():
     text2 = stage.Text(
         width=29, height=12, font=None, palette=constants.RED_PALETTE, buffer=None
     )
-    # Move the text to the position (40, 110)
-    text2.move(40, 110)
-    # Set the text to "PRESS START"
-    text2.text("PRESS START")
+
+    # Move the text to the position (32, 110)
+    text2.move(32, 110)
+
+    # Set the text to "START TO PLAY"
+    text2.text("START TO PLAY")
+
     # Add the text object to the text list
     text.append(text2)
+
+    # Create a Text object with a width of 29, height of 12, no font, and the red palette
+    text3 = stage.Text(
+        width=29, height=12, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+
+    # Move the text to the position (8, 70)
+    text3.move(8, 70)
+
+    # Set the text to "PRESS START"
+    text3.text("B FOR INSTRUCTIONS")
+
+    # Add the text object to the text list
+    text.append(text3)
 
     # Create the background grid using the image and set the size to 10x8 tiles
     background = stage.Grid(
@@ -140,26 +210,45 @@ def menu_scene():
         keys = ugame.buttons.get_pressed()
 
         # Check if they press the start button
-        if keys & ugame.K_START:
-            game_scene()
+        if keys & ugame.K_START != 0:
+            # go to the game scene
+            game_scene(mute)
+
+        # check if they press the B button
+        if keys & ugame.K_X != 0:
+            # go to the instructions scene
+            instructions_scene()
 
         # Pause the loop to achieve 60fps frame rate
         game.tick()
 
 
-def game_scene():
-    # This function sets up and runs the main game scene.
+# This function sets up and runs the main game scene.
+def game_scene(mute):
+    # Set the score to 0
     score = 0
+
+    # Display the score in the top left corner
     score_text = stage.Text(width=29, height=14)
     score_text.clear()
     score_text.cursor(0, 0)
     score_text.move(1, 1)
     score_text.text("Score: {0}".format(score))
 
+    # display if mute on/off in the top left corner
+    mute_text = stage.Text(width=29, height=14)
+    mute_text.clear()
+    mute_text.cursor(0, 0)
+    mute_text.move(1, 9)
+    mute_text.text("Mute: {0}".format(mute))
+
+    # this function takes an alien off screen and makes it move on screen
     def show_alien():
-        # this function takes an alien off screen and makes it move on screen
+        # for loop to cycle through all the aliens
         for alien_number in range(len(aliens)):
+            # check if they are not on the screen
             if aliens[alien_number].x < 0:
+                # move them on the screen
                 aliens[alien_number].move(
                     random.randint(
                         0 + constants.SPRITE_SIZE,
@@ -186,6 +275,8 @@ def game_scene():
     crash_sound = open("crash.wav", "rb")
     sound = ugame.audio
     sound.stop()
+
+    # Unmute it
     sound.mute(False)
 
     # create list of lasers for when we shoot
@@ -196,12 +287,15 @@ def game_scene():
         )
         lasers.append(a_single_laser)
 
+    # create 5 aliens
     aliens = []
     for alien_number in range(constants.TOTAL_NUMBER_OF_ALIENS):
+        # spawn them off the screen
         a_single_alien = stage.Sprite(
             image_bank_sprites, 9, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
         )
         aliens.append(a_single_alien)
+
     # place 1 alien on the screen
     show_alien()
 
@@ -211,14 +305,13 @@ def game_scene():
     )
 
     # set the background tile to choose random background from 1 - 3
-    # Do this using nested for each loops
+    # do this using nested for each loops
     for x_location in range(constants.SCREEN_GRID_X):
         for y_location in range(constants.SCREEN_GRID_Y):
             tile_picked = random.randint(1, 3)
             background.tile(x_location, y_location, tile_picked)
 
-    # Create the ball sprite using image at index 5, with initial position
-    # (56,57)
+    # Create the ball sprite using image at index 5
     ball = stage.Sprite(
         image_bank_sprites,
         5,
@@ -226,7 +319,10 @@ def game_scene():
         56,
     )
 
+    # create a table sprite
     table = stage.Sprite(image_bank_sprites, 0, 0, 56)
+
+    # create a second table sprite
     table2 = stage.Sprite(
         image_bank_sprites, 0, constants.SCREEN_X - constants.SPRITE_SIZE, 56
     )
@@ -237,7 +333,13 @@ def game_scene():
 
     # Add the background, lasers and other sprites to the layers list
     game.layers = (
-        [score_text] + lasers + [ball] + [table, table2] + aliens + [background]
+        [score_text]
+        + [mute_text]
+        + lasers
+        + [ball]
+        + [table, table2]
+        + aliens
+        + [background]
     )
 
     # Draw the background on the screen
@@ -272,36 +374,44 @@ def game_scene():
             else:
                 b_button = constants.button_state["button_up"]
 
-        # if they press start
-        if keys & ugame.K_START:
+        # if they press select
+        if keys & ugame.K_SELECT != 0:
+            if select_button == constants.button_state["button_up"]:
+                select_button = constants.button_state["button_just_pressed"]
+            elif select_button == constants.button_state["button_just_pressed"]:
+                select_button = constants.button_state["button_still_pressed"]
+        else:
+            if select_button == constants.button_state["button_still_pressed"]:
+                select_button = constants.button_state["button_released"]
+            else:
+                select_button = constants.button_state["button_up"]
+
+        # if they press the start button
+        if keys & ugame.K_START != 0:
             pass
 
-        # if they press the select button
-        if keys & ugame.K_SELECT:
-            menu_scene()
-
-        # code to move ball sprite and to wrap it
+        # code to move ball sprite to the right
         if keys & ugame.K_RIGHT != 0:
             if ball.x < constants.SCREEN_X - constants.SPRITE_SIZE:
                 ball.move(ball.x + 1, ball.y)
             else:
                 ball.move(constants.SCREEN_X - constants.SPRITE_SIZE, ball.y)
 
-        # if they press the left button
+        # code to move ball sprite to the left
         if keys & ugame.K_LEFT != 0:
             if ball.x >= 0:
                 ball.move(ball.x - 1, ball.y)
             else:
                 ball.move(0, ball.y)
 
-        # if they press the button to move up
+        # code to move ball sprite up and to wrap it
         if keys & ugame.K_UP != 0:
             if ball.y >= 0:
                 ball.move(ball.x, ball.y - 1)
             else:
                 ball.move(ball.x, 120)
 
-        # if they press the button to move down
+        # code to move ball sprite to the down and to wrap it
         if keys & ugame.K_DOWN != 0:
             if ball.y <= 120:
                 ball.move(ball.x, ball.y + 1)
@@ -313,20 +423,53 @@ def game_scene():
         if a_button == constants.button_state["button_just_pressed"]:
             # fire a laser, if we have enough power (have not used up all the lasers)
             for laser_number in range(len(lasers)):
+                # check if the laser are on the screen
                 if lasers[laser_number].x < 0:
                     lasers[laser_number].move(ball.x, ball.y)
-                    sound.play(pew_sound)
-                    break
+                    # if mute is off then play the sound
+                    if mute == "off":
+                        sound.play(pew_sound)
+                        break
+                    else:
+                        break
+
+        # if the b button is pressed play sound if mute is off
         if b_button == constants.button_state["button_just_pressed"]:
-            sound.play(pingpong_sound)
+            if mute == "off":
+                sound.play(pingpong_sound)
+            else:
+                pass
+
+        # if the select button is pressed
+        if select_button == constants.button_state["button_just_pressed"]:
+
+            # if it isn't muted, mute it
+            if mute == "off":
+                mute = "on"
+                mute_text.clear()
+                mute_text.cursor(0, 0)
+                mute_text.move(1, 9)
+                mute_text.text("Mute: {0}".format(mute))
+
+            # if it is muted , unmute it
+            else:
+                mute = "off"
+                mute_text.clear()
+                mute_text.cursor(0, 0)
+                mute_text.move(1, 9)
+                mute_text.text("Mute: {0}".format(mute))
 
         # each frame move the lasers, that have been fired up
         for laser_number in range(len(lasers)):
+
+            # only if the laser is on the screen
             if lasers[laser_number].x > 0:
                 lasers[laser_number].move(
                     lasers[laser_number].x,
                     lasers[laser_number].y - constants.LASER_SPEED,
                 )
+
+                # if the laser y coordinate is less than -16
                 if lasers[laser_number].y < constants.OFF_TOP_SCREEN:
                     lasers[laser_number].move(
                         constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
@@ -334,19 +477,28 @@ def game_scene():
 
         # each frame move the alien down that are on the screen
         for alien_number in range(len(aliens)):
+            # check to make sure it is on the screen
             if aliens[alien_number].x > 0:
                 aliens[alien_number].move(
                     aliens[alien_number].x,
                     aliens[alien_number].y + constants.ALIEN_SPEED,
                 )
+
+                # if the alien goes off the screen go to spawn point (-100,-100)
                 if aliens[alien_number].y > constants.SCREEN_Y:
                     aliens[alien_number].move(
                         constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
                     )
+
+                    # display 1 alien
                     show_alien()
+
+                    # decrease score by 1 if the alien gets to the bottom
                     score -= 1
                     if score < 0:
                         score = 0
+
+                    # display the score
                     score_text.clear()
                     score_text.cursor(0, 0)
                     score_text.move(1, 1)
@@ -378,7 +530,10 @@ def game_scene():
                             # Stop any currently playing sound
                             sound.stop()
                             # Play the sound of the alien being hit
-                            sound.play(boom_sound)
+                            if mute == "off":
+                                sound.play(boom_sound)
+                            else:
+                                pass
                             # Show two new aliens on the screen
                             show_alien()
                             show_alien()
@@ -388,6 +543,7 @@ def game_scene():
                             score_text.cursor(0, 0)
                             score_text.move(1, 1)
                             score_text.text("Score: {0}".format(score))
+
             for alien_number in range(len(aliens)):
                 # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
                 if aliens[alien_number].x > 0:
@@ -408,11 +564,22 @@ def game_scene():
                         # If collision is detected, stop any currently playing sound
                         sound.stop()
                         # Play the crash sound
-                        sound.play(crash_sound)
+                        if mute == "off":
+                            sound.play(crash_sound)
+                        else:
+                            pass
                         # Wait for 3 seconds before moving on to the game over scene
                         time.sleep(3.0)
                         # Call the game over scene and pass in the current score
-                        game_over_scene(score)
+
+                        # my personal high score
+                        high_score = 64
+
+                        # Check if the current score is higher than the high score
+                        if score > high_score:
+                            game_win_scene(score, high_score)
+                        else:
+                            game_loss_scene(score, high_score)
 
         # Redraw the Sprites
         game.render_sprites(lasers + [ball] + [table, table2] + aliens)
@@ -421,10 +588,9 @@ def game_scene():
         game.tick()
 
 
-def game_over_scene(final_score):
+def game_loss_scene(final_score, high_score):
     # This function displays the game over scene with the final score and
     # allows the user to restart the game by pressing the SELECT button.
-
     # Load the image "mt_game_studio.bmp"
     image_bank_2 = stage.Bank.from_bmp16("mt_game_studio.bmp")
 
@@ -435,6 +601,16 @@ def game_over_scene(final_score):
 
     # Create a list to store text objects
     text = []
+
+    text5 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (20, 20)
+    text5.move(20, 35)
+    # Set the text to the final score
+    text5.text("High Score: {:0>2d}".format(high_score))
+    # Add the text object to the text list
+    text.append(text5)
 
     # Create a Text object with a width of 29, height of 14, no font, and the blue palette
     text1 = stage.Text(
@@ -457,6 +633,16 @@ def game_over_scene(final_score):
     text2.text("GAME OVER")
     # Add the text object to the text list
     text.append(text2)
+
+    text4 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (43, 60)
+    text4.move(48, 70)
+    # Set the text to "GAME OVER"
+    text4.text("YOU LOSE")
+    # Add the text object to the text list
+    text.append(text4)
 
     # Create a Text object with a width of 29, height of 14, no font, and the blue palette
     text3 = stage.Text(
@@ -482,6 +668,86 @@ def game_over_scene(final_score):
         # Check if the SELECT button is pressed
         keys = ugame.buttons.get_pressed()
         if keys & ugame.K_SELECT != 0:
+            has_reloaded = True
+            # Reload the game if SELECT is pressed
+            supervisor.reload()
+
+        game.tick()
+
+
+def game_win_scene(current_score, high_score):
+    # This function displays the game over scene with the final score and
+
+    # allows the user to restart the game by pressing the SELECT button.
+
+    # Load the image "mt_game_studio.bmp"
+    image_bank_2 = stage.Bank.from_bmp16("pingpong_background.bmp")
+
+    # Create a background object using the image and dimensions from constants
+    background = stage.Grid(
+        image_bank_2, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
+    )
+
+    # Create a list to store text objects
+    text = []
+
+    # Create a Text object with a width of 29, height of 14, no font, and the blue palette
+    text1 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (20, 20)
+    text1.move(20, 20)
+    # Set the text to the final score
+    text1.text("Final Score: {:0>2d}".format(current_score))
+    # Add the text object to the text list
+    text.append(text1)
+
+    # Create a Text object with a width of 29, height of 14, no font, and the blue palette
+    text2 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (43, 60)
+    text2.move(43, 60)
+    # Set the text to "GAME OVER"
+    text2.text("GAME OVER")
+    # Add the text object to the text list
+    text.append(text2)
+
+    text4 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (43, 60)
+    text4.move(48, 70)
+    # Set the text to "GAME OVER"
+    text4.text("YOU WIN")
+    # Add the text object to the text list
+    text.append(text4)
+
+    # Create a Text object with a width of 29, height of 14, no font, and the blue palette
+    text3 = stage.Text(
+        width=29, height=14, font=None, palette=constants.RED_PALETTE, buffer=None
+    )
+    # Move the text to the position (32, 110)
+    text3.move(32, 110)
+    # Set the text to "PRESS SELECT"
+    text3.text("PRESS SELECT")
+    # Add the text object to the text list
+    text.append(text3)
+
+    # Create a "Stage" object to manage the game graphics and input
+    game = stage.Stage(ugame.display, constants.FPS)
+
+    # Add the background and text objects to the layers list
+    game.layers = text + [background]
+
+    # Draw the background and text on the screen
+    game.render_block()
+
+    while True:
+        # Check if the SELECT button is pressed
+        keys = ugame.buttons.get_pressed()
+        if keys & ugame.K_SELECT != 0:
+            has_reloaded = True
             # Reload the game if SELECT is pressed
             supervisor.reload()
 
@@ -489,4 +755,4 @@ def game_over_scene(final_score):
 
 
 if __name__ == "__main__":
-    splash_scene()
+    splash_scene(mute)
