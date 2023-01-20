@@ -14,7 +14,7 @@ import board
 
 
 # global variable off
-mute = "off"
+mute = "on"
 
 
 def splash_scene(mute):
@@ -27,7 +27,7 @@ def splash_scene(mute):
     sound.mute(False)
 
     # play coin sound
-    sound.play(coin_sound)
+    # sound.play(coin_sound)
 
     # Load the background and sprite image banks
     image_bank_foreground = stage.Bank.from_bmp16("mt_game_studio.bmp")
@@ -36,35 +36,26 @@ def splash_scene(mute):
     image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
 
     sprite = []
-    for a_xval in range(0,160,16):
+    for a_xval in range(0, 160, 16):
         # Create the background grid using the image and set the size to 10x8 tiles
-        spritea = stage.Sprite(
-            image_bank_sprites, 1, a_xval, 0)
+        spritea = stage.Sprite(image_bank_sprites, 1, a_xval, 0)
         sprite.append(spritea)
-    
-    for a_val in range(0,160,16):
+
+    for a_val in range(0, 160, 16):
         # Create the background grid using the image and set the size to 10x8 tiles
-        spriteb = stage.Sprite(
-            image_bank_sprites, 1, a_val, 112
-        )
+        spriteb = stage.Sprite(image_bank_sprites, 1, a_val, 112)
         sprite.append(spriteb)
-    
-    for a_yval in range(16,112,16):
+
+    for a_yval in range(16, 112, 16):
         # Create the background grid using the image and set the size to 10x8 tiles
-        spritec = stage.Sprite(
-            image_bank_sprites, 1, 0, a_yval
-        )
+        spritec = stage.Sprite(image_bank_sprites, 1, 0, a_yval)
         sprite.append(spritec)
-        
-    for a_yval in range(16,112,16):
+
+    for a_yval in range(16, 112, 16):
         # Create the background grid using the image and set the size to 10x8 tiles
-        sprited = stage.Sprite(
-            image_bank_sprites, 1, 144, a_yval
-        )
+        sprited = stage.Sprite(image_bank_sprites, 1, 144, a_yval)
         sprite.append(sprited)
-    
-    
-        
+
     # Create the fore grid using the image and set the size to 10x8 tiles
     background = stage.Grid(
         image_bank_foreground, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
@@ -117,7 +108,6 @@ def splash_scene(mute):
     background.tile(6, 5, 0)
 
     background.tile(7, 5, 0)  # blank white
-
 
     # Create a "Stage" object to manage the game graphics and input
     # Set the frame rate to 60fps
@@ -294,7 +284,7 @@ def game_scene(mute):
     mute_text.cursor(0, 0)
     mute_text.move(1, 9)
     mute_text.text("Mute: {0}".format(mute))
-    
+
     # Display the amount of lives
     lives = 3
     lives_text = stage.Text(width=29, height=14)
@@ -302,7 +292,22 @@ def game_scene(mute):
     lives_text.cursor(0, 0)
     lives_text.move(90, 1)
     lives_text.text("Lives: {0}".format(lives))
-    
+
+    # this function takes an alien off screen and makes it move on screen
+    def show_shroom():
+        # for loop to cycle through all the aliens
+        for shroom_number in range(len(shrooms)):
+            # check if they are not on the screen
+            if shrooms[shroom_number].x < 0:
+                # move them on the screen
+                shrooms[shroom_number].move(
+                    random.randint(
+                        0 + constants.SPRITE_SIZE,
+                        constants.SCREEN_X - constants.SPRITE_SIZE,
+                    ),
+                    constants.OFF_TOP_SCREEN,
+                )
+                break
 
     # this function takes an alien off screen and makes it move on screen
     def show_alien():
@@ -350,6 +355,14 @@ def game_scene(mute):
         )
         lasers.append(a_single_laser)
 
+    # create list of shrooms
+    shrooms = []
+    for shroom_number in range(constants.TOTAL_NUMBER_OF_SHROOMS):
+        a_single_shroom = stage.Sprite(
+            image_bank_sprites, 7, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+        )
+        shrooms.append(a_single_shroom)
+
     # create 5 aliens
     aliens = []
     for alien_number in range(constants.TOTAL_NUMBER_OF_ALIENS):
@@ -361,6 +374,7 @@ def game_scene(mute):
 
     # place 1 alien on the screen
     show_alien()
+    show_shroom()
 
     # Create the background grid using the image and set the size to 10x8 tiles
     background = stage.Grid(
@@ -395,12 +409,14 @@ def game_scene(mute):
     game = stage.Stage(ugame.display, constants.FPS)
 
     # Add the background, lasers and other sprites to the layers list
-    game.layers = ([lives_text] +
-        [score_text]
+    game.layers = (
+        [lives_text]
+        + [score_text]
         + [mute_text]
         + lasers
         + [ball]
         + aliens
+        + shrooms
         + [background]
     )
 
@@ -539,6 +555,35 @@ def game_scene(mute):
                         )
 
             # each frame move the alien down that are on the screen
+            for shroom_number in range(len(shrooms)):
+                # check to make sure it is on the screen
+                if shrooms[shroom_number].x > 0:
+                    shrooms[shroom_number].move(
+                        shrooms[shroom_number].x,
+                        shrooms[shroom_number].y + constants.ALIEN_SPEED,
+                    )
+
+                    # if the alien goes off the screen go to spawn point (-100,-100)
+                    if shrooms[shroom_number].y > constants.SCREEN_Y:
+                        shrooms[shroom_number].move(
+                            constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                        )
+
+                        # display 1 alien
+                        show_shroom()
+
+                        # decrease score by 1 if the alien gets to the bottom
+                        score -= 3
+                        if score < 0:
+                            score = 0
+
+                        # display the score
+                        score_text.clear()
+                        score_text.cursor(0, 0)
+                        score_text.move(1, 1)
+                        score_text.text("Score: {0}".format(score))
+
+            # each frame move the alien down that are on the screen
             for alien_number in range(len(aliens)):
                 # check to make sure it is on the screen
                 if aliens[alien_number].x > 0:
@@ -632,13 +677,13 @@ def game_scene(mute):
                             for alien_number in range(5):
                                 (aliens[alien_number]).move(
                                     constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
-                            )
+                                )
                                 # Puts the aliens on screen.
                                 show_alien()
                                 show_alien()
-                            
+
                             # Remove 1 life
-                            lives -=1
+                            lives -= 1
 
                             # Play the crash sound
                             if mute == "off":
@@ -650,9 +695,52 @@ def game_scene(mute):
                             lives_text.move(90, 1)
                             lives_text.text("Lives: {0}".format(lives))
 
-                        
+                # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
+                for shroom_number in range(len(shrooms)):
+                    # Check for collision between the current alien and the ship using the `stage.collide` function
+                    # This function takes the x and y coordinates of the bounding box of each object
+                    if shrooms[shroom_number].x > 0:
+                        if stage.collide(
+                            shrooms[shroom_number].x + 2,
+                            shrooms[shroom_number].y + 2,
+                            shrooms[shroom_number].x + 15,
+                            shrooms[shroom_number].y + 15,
+                            ball.x + 7,
+                            ball.y + 7,
+                            ball.x + 8,
+                            ball.y + 15,
+                        ):
+                            # Puts The Aliens Off Screen.
+                            for shroom_number in range(2):
+                                (shrooms[shroom_number]).move(
+                                    constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                                )
+                                # Puts the aliens on screen.
+                                show_shroom()
+                                show_shroom()
+
+                            # Remove 1 life
+                            lives += 1
+                            score += 5
+
+                            # Play the crash sound
+                            if mute == "off":
+                                sound.play(crash_sound)
+
+                            # Display the score
+                            lives_text.clear()
+                            lives_text.cursor(0, 0)
+                            lives_text.move(90, 1)
+                            lives_text.text("Lives: {0}".format(lives))
+
+                            # Display the score
+                            score_text.clear()
+                            score_text.cursor(0, 0)
+                            score_text.move(1, 1)
+                            score_text.text("Score: {0}".format(score))
+
             # Redraw the Sprites
-            game.render_sprites(lasers + [ball] + [table, table2] + aliens)
+            game.render_sprites(lasers + shrooms + [ball] + [table, table2] + aliens)
 
             # Pause the loop to achieve 60fps frame rate
             game.tick()
@@ -676,7 +764,7 @@ def game_scene(mute):
 
             # Call the game over scene and pass in the current score
             # my personal high score
-            high_score = 5
+            high_score = 1500
 
             # Check if the current score is higher than the high score
             if score > high_score:
@@ -685,11 +773,10 @@ def game_scene(mute):
                 game_loss_scene(score, high_score)
 
             # Redraw the Sprites
-            game.render_sprites(lasers + [ball] + [table, table2] + aliens)
+            game.render_sprites(lasers + shrooms + [ball] + [table, table2] + aliens)
 
             # Pause the loop to achieve 60fps frame rate
             game.tick()
-
 
 
 def game_loss_scene(final_score, high_score):
