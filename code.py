@@ -4,16 +4,13 @@
 # Created by: Peter Sobowale
 # Created on: Jan 2023
 # This program is the "Space Aliens" game for the PyBadge.
-
-
 import ugame
-
+import stage
 import random
 import time
-
-import constants
-import stage
 import supervisor
+import constants
+import board
 
 
 # global variable off
@@ -33,56 +30,109 @@ def splash_scene(mute):
     sound.play(coin_sound)
 
     # Load the background and sprite image banks
-    image_bank_background = stage.Bank.from_bmp16("mt_game_studio.bmp")
+    image_bank_foreground = stage.Bank.from_bmp16("mt_game_studio.bmp")
 
-    # Create the background grid using the image and set the size to 10x8 tiles
+    # Load the background and sprite image banks
+    image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
+
+    sprite = []
+    for a_xval in range(0,160,16):
+        # Create the background grid using the image and set the size to 10x8 tiles
+        spritea = stage.Sprite(
+            image_bank_sprites, 1, a_xval, 0)
+        sprite.append(spritea)
+    
+    for a_val in range(0,160,16):
+        # Create the background grid using the image and set the size to 10x8 tiles
+        spriteb = stage.Sprite(
+            image_bank_sprites, 1, a_val, 112
+        )
+        sprite.append(spriteb)
+    
+    for a_yval in range(16,112,16):
+        # Create the background grid using the image and set the size to 10x8 tiles
+        spritec = stage.Sprite(
+            image_bank_sprites, 1, 0, a_yval
+        )
+        sprite.append(spritec)
+        
+    for a_yval in range(16,112,16):
+        # Create the background grid using the image and set the size to 10x8 tiles
+        sprited = stage.Sprite(
+            image_bank_sprites, 1, 144, a_yval
+        )
+        sprite.append(sprited)
+    
+    
+        
+    # Create the fore grid using the image and set the size to 10x8 tiles
     background = stage.Grid(
-        image_bank_background, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
+        image_bank_foreground, constants.SCREEN_GRID_X, constants.SCREEN_GRID_Y
     )
 
-    # tile the background to make a splash screen
     background.tile(2, 2, 0)  # blank white
+
     background.tile(3, 2, 1)
+
     background.tile(4, 2, 2)
+
     background.tile(5, 2, 3)
+
     background.tile(6, 2, 4)
+
     background.tile(7, 2, 0)  # blank white
 
     background.tile(2, 3, 0)  # blank white
+
     background.tile(3, 3, 5)
+
     background.tile(4, 3, 6)
+
     background.tile(5, 3, 7)
+
     background.tile(6, 3, 8)
+
     background.tile(7, 3, 0)  # blank white
 
     background.tile(2, 4, 0)  # blank white
+
     background.tile(3, 4, 9)
+
     background.tile(4, 4, 10)
+
     background.tile(5, 4, 11)
+
     background.tile(6, 4, 12)
+
     background.tile(7, 4, 0)  # blank white
 
     background.tile(2, 5, 0)  # blank white
+
     background.tile(3, 5, 0)
+
     background.tile(4, 5, 13)
+
     background.tile(5, 5, 14)
+
     background.tile(6, 5, 0)
+
     background.tile(7, 5, 0)  # blank white
+
 
     # Create a "Stage" object to manage the game graphics and input
     # Set the frame rate to 60fps
     game = stage.Stage(ugame.display, constants.FPS)
 
     # Add the background and ball to the layers list
-    game.layers = [background]
+    game.layers = sprite + [background]
 
     # Draw the background on the screen
     game.render_block()
 
     # repeat forever game loop
     while True:
-        # wait for 2 seconds
-        time.sleep(2)
+        # wait for 1 seconds
+        time.sleep(1)
 
         # go to the menu scene
         menu_scene()
@@ -244,6 +294,15 @@ def game_scene(mute):
     mute_text.cursor(0, 0)
     mute_text.move(1, 9)
     mute_text.text("Mute: {0}".format(mute))
+    
+    # Display the amount of lives
+    lives = 3
+    lives_text = stage.Text(width=29, height=14)
+    lives_text.clear()
+    lives_text.cursor(0, 0)
+    lives_text.move(90, 1)
+    lives_text.text("Lives: {0}".format(lives))
+    
 
     # this function takes an alien off screen and makes it move on screen
     def show_alien():
@@ -262,8 +321,9 @@ def game_scene(mute):
                 break
 
     # Load the background and sprite image banks
-    image_bank_background = stage.Bank.from_bmp16("pingpong_background.bmp")
+    image_bank_background = stage.Bank.from_bmp16("space_aliens.bmp")
     image_bank_sprites = stage.Bank.from_bmp16("space_aliens.bmp")
+    image_bank_sprite = stage.Bank.from_bmp16("peter_alien.bmp")
 
     # Buttons state information.
     a_button = constants.button_state["button_up"]
@@ -286,7 +346,7 @@ def game_scene(mute):
     lasers = []
     for laser_number in range(constants.TOTAL_NUMBER_OF_LASERS):
         a_single_laser = stage.Sprite(
-            image_bank_sprites, 10, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+            image_bank_sprites, 6, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
         )
         lasers.append(a_single_laser)
 
@@ -295,7 +355,7 @@ def game_scene(mute):
     for alien_number in range(constants.TOTAL_NUMBER_OF_ALIENS):
         # spawn them off the screen
         a_single_alien = stage.Sprite(
-            image_bank_sprites, 9, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+            image_bank_sprite, 0, constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
         )
         aliens.append(a_single_alien)
 
@@ -311,7 +371,7 @@ def game_scene(mute):
     # do this using nested for each loops
     for x_location in range(constants.SCREEN_GRID_X):
         for y_location in range(constants.SCREEN_GRID_Y):
-            tile_picked = random.randint(1, 3)
+            tile_picked = random.randint(2, 4)
             background.tile(x_location, y_location, tile_picked)
 
     # Create the ball sprite using image at index 5
@@ -335,12 +395,11 @@ def game_scene(mute):
     game = stage.Stage(ugame.display, constants.FPS)
 
     # Add the background, lasers and other sprites to the layers list
-    game.layers = (
+    game.layers = ([lives_text] +
         [score_text]
         + [mute_text]
         + lasers
         + [ball]
-        + [table, table2]
         + aliens
         + [background]
     )
@@ -350,252 +409,287 @@ def game_scene(mute):
 
     # Game Loop
     while True:
-        # for user input
-        keys = ugame.buttons.get_pressed()
+        if lives != 0:
+            # for user input
+            keys = ugame.buttons.get_pressed()
 
-        # A button for fire.
-        if keys & ugame.K_O != 0:
-            if a_button == constants.button_state["button_up"]:
-                a_button = constants.button_state["button_just_pressed"]
-            elif a_button == constants.button_state["button_just_pressed"]:
-                a_button = constants.button_state["button_still_pressed"]
-        else:
-            if a_button == constants.button_state["button_still_pressed"]:
-                a_button = constants.button_state["button_released"]
+            # A button for fire.
+            if keys & ugame.K_O != 0:
+                if a_button == constants.button_state["button_up"]:
+                    a_button = constants.button_state["button_just_pressed"]
+                elif a_button == constants.button_state["button_just_pressed"]:
+                    a_button = constants.button_state["button_still_pressed"]
             else:
-                a_button = constants.button_state["button_up"]
+                if a_button == constants.button_state["button_still_pressed"]:
+                    a_button = constants.button_state["button_released"]
+                else:
+                    a_button = constants.button_state["button_up"]
 
-        # B button to fire
-        if keys & ugame.K_X != 0:
-            if b_button == constants.button_state["button_up"]:
-                b_button = constants.button_state["button_just_pressed"]
-            elif b_button == constants.button_state["button_just_pressed"]:
-                b_button = constants.button_state["button_still_pressed"]
-        else:
-            if b_button == constants.button_state["button_still_pressed"]:
-                b_button = constants.button_state["button_released"]
+            # B button to fire
+            if keys & ugame.K_X != 0:
+                if b_button == constants.button_state["button_up"]:
+                    b_button = constants.button_state["button_just_pressed"]
+                elif b_button == constants.button_state["button_just_pressed"]:
+                    b_button = constants.button_state["button_still_pressed"]
             else:
-                b_button = constants.button_state["button_up"]
+                if b_button == constants.button_state["button_still_pressed"]:
+                    b_button = constants.button_state["button_released"]
+                else:
+                    b_button = constants.button_state["button_up"]
 
-        # if they press select
-        if keys & ugame.K_SELECT != 0:
-            if select_button == constants.button_state["button_up"]:
-                select_button = constants.button_state["button_just_pressed"]
-            elif select_button == constants.button_state["button_just_pressed"]:
-                select_button = constants.button_state["button_still_pressed"]
-        else:
-            if select_button == constants.button_state["button_still_pressed"]:
-                select_button = constants.button_state["button_released"]
+            # if they press select
+            if keys & ugame.K_SELECT != 0:
+                if select_button == constants.button_state["button_up"]:
+                    select_button = constants.button_state["button_just_pressed"]
+                elif select_button == constants.button_state["button_just_pressed"]:
+                    select_button = constants.button_state["button_still_pressed"]
             else:
-                select_button = constants.button_state["button_up"]
+                if select_button == constants.button_state["button_still_pressed"]:
+                    select_button = constants.button_state["button_released"]
+                else:
+                    select_button = constants.button_state["button_up"]
 
-        # if they press the start button
-        if keys & ugame.K_START != 0:
-            pass
-
-        # code to move ball sprite to the right
-        if keys & ugame.K_RIGHT != 0:
-            if ball.x < constants.SCREEN_X - constants.SPRITE_SIZE:
-                ball.move(ball.x + 1, ball.y)
-            else:
-                ball.move(constants.SCREEN_X - constants.SPRITE_SIZE, ball.y)
-
-        # code to move ball sprite to the left
-        if keys & ugame.K_LEFT != 0:
-            if ball.x >= 0:
-                ball.move(ball.x - 1, ball.y)
-            else:
-                ball.move(0, ball.y)
-
-        # code to move ball sprite up and to wrap it
-        if keys & ugame.K_UP != 0:
-            if ball.y >= 0:
-                ball.move(ball.x, ball.y - 1)
-            else:
-                ball.move(ball.x, 120)
-
-        # code to move ball sprite to the down and to wrap it
-        if keys & ugame.K_DOWN != 0:
-            if ball.y <= 120:
-                ball.move(ball.x, ball.y + 1)
-            else:
-                ball.move(ball.x, 0)
-
-        # update game logic
-        # play sound if A was just button_just_pressed
-        if a_button == constants.button_state["button_just_pressed"]:
-            # fire a laser, if we have enough power (have not used up all the lasers)
-            for laser_number in range(len(lasers)):
-                # check if the laser are on the screen
-                if lasers[laser_number].x < 0:
-                    lasers[laser_number].move(ball.x, ball.y)
-                    # if mute is off then play the sound
-                    if mute == "off":
-                        sound.play(pew_sound)
-                        break
-                    else:
-                        break
-
-        # if the b button is pressed play sound if mute is off
-        if b_button == constants.button_state["button_just_pressed"]:
-            if mute == "off":
-                sound.play(pingpong_sound)
-            else:
+            # if they press the start button
+            if keys & ugame.K_START != 0:
                 pass
 
-        # if the select button is pressed
-        if select_button == constants.button_state["button_just_pressed"]:
+            # code to move ball sprite to the right
+            if keys & ugame.K_RIGHT != 0:
+                if ball.x < constants.SCREEN_X - constants.SPRITE_SIZE:
+                    ball.move(ball.x + 1, ball.y)
+                else:
+                    ball.move(constants.SCREEN_X - constants.SPRITE_SIZE, ball.y)
 
-            # if it isn't muted, mute it
-            if mute == "off":
-                mute = "on"
-                mute_text.clear()
-                mute_text.cursor(0, 0)
-                mute_text.move(1, 9)
-                mute_text.text("Mute: {0}".format(mute))
+            # code to move ball sprite to the left
+            if keys & ugame.K_LEFT != 0:
+                if ball.x >= 0:
+                    ball.move(ball.x - 1, ball.y)
+                else:
+                    ball.move(0, ball.y)
 
-            # if it is muted , unmute it
-            else:
-                mute = "off"
-                mute_text.clear()
-                mute_text.cursor(0, 0)
-                mute_text.move(1, 9)
-                mute_text.text("Mute: {0}".format(mute))
+            # code to move ball sprite up and to wrap it
+            if keys & ugame.K_UP != 0:
+                if ball.y >= 0:
+                    ball.move(ball.x, ball.y - 1)
+                else:
+                    ball.move(ball.x, 120)
 
-        # each frame move the lasers, that have been fired up
-        for laser_number in range(len(lasers)):
+            # code to move ball sprite to the down and to wrap it
+            if keys & ugame.K_DOWN != 0:
+                if ball.y <= 120:
+                    ball.move(ball.x, ball.y + 1)
+                else:
+                    ball.move(ball.x, 0)
 
-            # only if the laser is on the screen
-            if lasers[laser_number].x > 0:
-                lasers[laser_number].move(
-                    lasers[laser_number].x,
-                    lasers[laser_number].y - constants.LASER_SPEED,
-                )
+            # update game logic
+            # play sound if A was just button_just_pressed
+            if a_button == constants.button_state["button_just_pressed"]:
+                # fire a laser, if we have enough power (have not used up all the lasers)
+                for laser_number in range(len(lasers)):
+                    # check if the laser are on the screen
+                    if lasers[laser_number].x < 0:
+                        lasers[laser_number].move(ball.x, ball.y)
+                        # if mute is off then play the sound
+                        if mute == "off":
+                            sound.play(pew_sound)
+                            break
+                        else:
+                            break
 
-                # if the laser y coordinate is less than -16
-                if lasers[laser_number].y < constants.OFF_TOP_SCREEN:
+            # if the b button is pressed play sound if mute is off
+            if b_button == constants.button_state["button_just_pressed"]:
+                if mute == "off":
+                    sound.play(pingpong_sound)
+                else:
+                    pass
+
+            # if the select button is pressed
+            if select_button == constants.button_state["button_just_pressed"]:
+
+                # if it isn't muted, mute it
+                if mute == "off":
+                    mute = "on"
+                    mute_text.clear()
+                    mute_text.cursor(0, 0)
+                    mute_text.move(1, 9)
+                    mute_text.text("Mute: {0}".format(mute))
+
+                # if it is muted , unmute it
+                else:
+                    mute = "off"
+                    mute_text.clear()
+                    mute_text.cursor(0, 0)
+                    mute_text.move(1, 9)
+                    mute_text.text("Mute: {0}".format(mute))
+
+            # each frame move the lasers, that have been fired up
+            for laser_number in range(len(lasers)):
+
+                # only if the laser is on the screen
+                if lasers[laser_number].x > 0:
                     lasers[laser_number].move(
-                        constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                        lasers[laser_number].x,
+                        lasers[laser_number].y - constants.LASER_SPEED,
                     )
 
-        # each frame move the alien down that are on the screen
-        for alien_number in range(len(aliens)):
-            # check to make sure it is on the screen
-            if aliens[alien_number].x > 0:
-                aliens[alien_number].move(
-                    aliens[alien_number].x,
-                    aliens[alien_number].y + constants.ALIEN_SPEED,
-                )
+                    # if the laser y coordinate is less than -16
+                    if lasers[laser_number].y < constants.OFF_TOP_SCREEN:
+                        lasers[laser_number].move(
+                            constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                        )
 
-                # if the alien goes off the screen go to spawn point (-100,-100)
-                if aliens[alien_number].y > constants.SCREEN_Y:
+            # each frame move the alien down that are on the screen
+            for alien_number in range(len(aliens)):
+                # check to make sure it is on the screen
+                if aliens[alien_number].x > 0:
                     aliens[alien_number].move(
-                        constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                        aliens[alien_number].x,
+                        aliens[alien_number].y + constants.ALIEN_SPEED,
                     )
 
-                    # display 1 alien
-                    show_alien()
+                    # if the alien goes off the screen go to spawn point (-100,-100)
+                    if aliens[alien_number].y > constants.SCREEN_Y:
+                        aliens[alien_number].move(
+                            constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                        )
 
-                    # decrease score by 1 if the alien gets to the bottom
-                    score -= 1
-                    if score < 0:
-                        score = 0
+                        # display 1 alien
+                        show_alien()
 
-                    # display the score
-                    score_text.clear()
-                    score_text.cursor(0, 0)
-                    score_text.move(1, 1)
-                    score_text.text("Score: {0}".format(score))
+                        # decrease score by 1 if the alien gets to the bottom
+                        score -= 1
+                        if score < 0:
+                            score = 0
 
-        # check if the aliens and lasers are touching
-        for laser_number in range(len(lasers)):
-            if lasers[laser_number].x > 0:
+                        # display the score
+                        score_text.clear()
+                        score_text.cursor(0, 0)
+                        score_text.move(1, 1)
+                        score_text.text("Score: {0}".format(score))
+
+            # check if the aliens and lasers are touching
+            for laser_number in range(len(lasers)):
+                if lasers[laser_number].x > 0:
+                    for alien_number in range(len(aliens)):
+                        if aliens[alien_number].x > 0:
+                            if stage.collide(
+                                lasers[laser_number].x + 4,
+                                lasers[laser_number].y + 2,
+                                lasers[laser_number].x + 11,
+                                lasers[laser_number].y + 12,
+                                aliens[alien_number].x,
+                                aliens[alien_number].y + 6,
+                                aliens[alien_number].x + 15,
+                                aliens[alien_number].y + 15,
+                            ):
+                                # You hit an alien
+                                # Move the alien & laser off screen
+                                aliens[alien_number].move(
+                                    constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                                )
+                                lasers[laser_number].move(
+                                    constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                                )
+
+                                # Stop any currently playing sound
+                                sound.stop()
+
+                                # Play the sound of the alien being hit
+                                if mute == "off":
+                                    sound.play(boom_sound)
+                                else:
+                                    pass
+
+                                # Show two new aliens on the screen
+                                show_alien()
+                                show_alien()
+
+                                # Increase the score by 1
+                                score += 1
+
+                                # Display the score
+                                score_text.clear()
+                                score_text.cursor(0, 0)
+                                score_text.move(1, 1)
+                                score_text.text("Score: {0}".format(score))
+
+                # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
                 for alien_number in range(len(aliens)):
+                    # Check for collision between the current alien and the ship using the `stage.collide` function
+                    # This function takes the x and y coordinates of the bounding box of each object
                     if aliens[alien_number].x > 0:
                         if stage.collide(
-                            lasers[laser_number].x + 4,
-                            lasers[laser_number].y + 2,
-                            lasers[laser_number].x + 11,
-                            lasers[laser_number].y + 12,
-                            aliens[alien_number].x,
-                            aliens[alien_number].y + 6,
+                            aliens[alien_number].x + 2,
+                            aliens[alien_number].y + 2,
                             aliens[alien_number].x + 15,
                             aliens[alien_number].y + 15,
+                            ball.x + 7,
+                            ball.y + 7,
+                            ball.x + 8,
+                            ball.y + 15,
                         ):
-                            # You hit an alien
-                            # Move the alien & laser off screen
-                            aliens[alien_number].move(
-                                constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
+                            # Puts The Aliens Off Screen.
+                            for alien_number in range(5):
+                                (aliens[alien_number]).move(
+                                    constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
                             )
-                            lasers[laser_number].move(
-                                constants.OFF_SCREEN_X, constants.OFF_SCREEN_Y
-                            )
+                                # Puts the aliens on screen.
+                                show_alien()
+                                show_alien()
+                            
+                            # Remove 1 life
+                            lives -=1
 
-                            # Stop any currently playing sound
-                            sound.stop()
-
-                            # Play the sound of the alien being hit
+                            # Play the crash sound
                             if mute == "off":
-                                sound.play(boom_sound)
-                            else:
-                                pass
-
-                            # Show two new aliens on the screen
-                            show_alien()
-                            show_alien()
-
-                            # Increase the score by 1
-                            score += 1
+                                sound.play(crash_sound)
 
                             # Display the score
-                            score_text.clear()
-                            score_text.cursor(0, 0)
-                            score_text.move(1, 1)
-                            score_text.text("Score: {0}".format(score))
+                            lives_text.clear()
+                            lives_text.cursor(0, 0)
+                            lives_text.move(90, 1)
+                            lives_text.text("Lives: {0}".format(lives))
 
-            # Check if the x-coordinate of the alien is greater than 0, meaning it is on the screen
-            for alien_number in range(len(aliens)):
-                # Check for collision between the current alien and the ship using the `stage.collide` function
-                # This function takes the x and y coordinates of the bounding box of each object
-                if aliens[alien_number].x > 0:
-                    if stage.collide(
-                        aliens[alien_number].x + 2,
-                        aliens[alien_number].y + 2,
-                        aliens[alien_number].x + 15,
-                        aliens[alien_number].y + 15,
-                        ball.x + 7,
-                        ball.y + 7,
-                        ball.x + 8,
-                        ball.y + 15,
-                    ):
-                        # If collision is detected, stop any currently playing sound
-                        sound.stop()
+                        
+            # Redraw the Sprites
+            game.render_sprites(lasers + [ball] + [table, table2] + aliens)
 
-                        # Play the crash sound
-                        if mute == "off":
-                            sound.play(crash_sound)
-                        else:
-                            pass
+            # Pause the loop to achieve 60fps frame rate
+            game.tick()
+            continue
 
-                        # Wait for 3 seconds before moving on to the game over scene
-                        time.sleep(3.0)
+        else:
+            # Display the score
+            lives_text.clear()
+            lives_text.cursor(0, 0)
+            lives_text.move(90, 1)
+            lives_text.text("Lives: {0}".format(lives))
 
-                        # Call the game over scene and pass in the current score
+            # If collision is detected, stop any currently playing sound
+            sound.stop()
 
-                        # my personal high score
-                        high_score = 64
+            if mute == "off":
+                sound.play(crash_sound)
 
-                        # Check if the current score is higher than the high score
-                        if score > high_score:
-                            game_win_scene(score, high_score)
-                        else:
-                            game_loss_scene(score, high_score)
+            # Wait for 2 seconds before moving on to the game over scene
+            time.sleep(2.0)
 
-        # Redraw the Sprites
-        game.render_sprites(lasers + [ball] + [table, table2] + aliens)
+            # Call the game over scene and pass in the current score
+            # my personal high score
+            high_score = 5
 
-        # Pause the loop to achieve 60fps frame rate
-        game.tick()
+            # Check if the current score is higher than the high score
+            if score > high_score:
+                game_win_scene(score, high_score)
+            else:
+                game_loss_scene(score, high_score)
+
+            # Redraw the Sprites
+            game.render_sprites(lasers + [ball] + [table, table2] + aliens)
+
+            # Pause the loop to achieve 60fps frame rate
+            game.tick()
+
 
 
 def game_loss_scene(final_score, high_score):
